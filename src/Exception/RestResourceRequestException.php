@@ -6,7 +6,7 @@ namespace Shopify\Exception;
 
 class RestResourceRequestException extends ShopifyException
 {
-    private readonly int $statusCode;
+    private $statusCode;
 
     public function __construct($message, $statusCode)
     {

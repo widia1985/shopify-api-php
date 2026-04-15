@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace Shopify\Clients;
 
-use Shopify\Exception\HttpRequestException;
-use Psr\Http\Client\ClientExceptionInterface;
-use Shopify\Exception\UninitializedContextException;
 use Shopify\Context;
 use Shopify\Exception\MissingArgumentException;
 
 class Graphql
 {
-    private readonly Http $client;
-    protected ?string $token;
+    /** @var Http */
+    private $client;
+    /** @var string|null */
+    protected $token;
 
     /**
      * GraphQL Client constructor.
@@ -21,7 +20,7 @@ class Graphql
      * @param string      $domain
      * @param string|null $token
      *
-     * @throws MissingArgumentException
+     * @throws \Shopify\Exception\MissingArgumentException
      */
     public function __construct(
         string $domain,
@@ -43,8 +42,8 @@ class Graphql
      * @param int|null       $tries        How many times to attempt the request
      *
      * @return HttpResponse
-     * @throws HttpRequestException
-     * @throws MissingArgumentException
+     * @throws \Shopify\Exception\HttpRequestException
+     * @throws \Shopify\Exception\MissingArgumentException
      */
     public function query(
         $data,
@@ -60,9 +59,10 @@ class Graphql
         $extraHeaders[$accessTokenHeader] = $accessToken;
 
         if (is_array($data)) {
+            $dataType = Http::DATA_TYPE_JSON;
             $data = json_encode($data);
         } else {
-            $data = json_encode([ "query" => $data ]);
+            $dataType = Http::DATA_TYPE_GRAPHQL;
         }
 
         return $this->client->post(
@@ -71,6 +71,7 @@ class Graphql
             $extraHeaders,
             $query,
             $tries,
+            $dataType,
         );
     }
 
@@ -81,10 +82,10 @@ class Graphql
      * @param array    $extraHeaders Any extra headers to send along with the request
      * @param int|null $tries        How many times to attempt the request
      *
-     * @return HttpResponse
-     * @throws ClientExceptionInterface
-     * @throws MissingArgumentException
-     * @throws UninitializedContextException
+     * @return \Shopify\Clients\HttpResponse
+     * @throws \Psr\Http\Client\ClientExceptionInterface
+     * @throws \Shopify\Exception\MissingArgumentException
+     * @throws \Shopify\Exception\UninitializedContextException
      */
     public function proxy(
         string $data,
@@ -115,7 +116,8 @@ class Graphql
      */
     protected function getApiPath(): string
     {
-        return 'admin/api/' . Context::$API_VERSION . '/graphql.json';
+        //return 'admin/api/' . Context::$API_VERSION . '/graphql.json';
+        return 'admin/api/2023-10/graphql.json';
     }
 
     /**

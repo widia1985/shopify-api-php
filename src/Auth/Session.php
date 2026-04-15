@@ -24,10 +24,10 @@ class Session
     private $onlineAccessInfo = null;
 
     public function __construct(
-        private string $id,
-        private string $shop,
-        private bool $isOnline,
-        private string $state
+        private $id,
+        private $shop,
+        private $isOnline,
+        private $state
     ) {
         $this->id = $id;
         $this->shop = Utils::sanitizeShopDomain($shop);

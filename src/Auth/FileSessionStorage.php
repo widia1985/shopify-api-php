@@ -17,12 +17,14 @@ class FileSessionStorage implements SessionStorage
      *
      * @param string $path Path to store the session files in
      */
-    public function __construct(string $path = '/tmp/shopify_api_sessions')
+    public function __construct(string $path = null)
     {
+        $path = $path ?? sys_get_temp_dir() . '/shopify_api_sessions';
+    
         if (!is_dir($path)) {
-            mkdir($path);
+            mkdir($path, 0777, true);
         }
-
+    
         $this->path = $path;
     }
 

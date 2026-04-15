@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Shopify;
 
-use Exception;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Shopify\Auth\Scopes;
@@ -60,7 +59,7 @@ class Context
      * @param string|array         $scopes                          App scopes
      * @param string               $hostName                        App host name e.g. www.google.ca. May include scheme
      * @param SessionStorage       $sessionStorage                  Session storage strategy
-     * @param string               $apiVersion                      App API version
+     * @param string               $apiVersion                      App API key, defaults to unstable
      * @param bool                 $isEmbeddedApp                   Whether the app is an embedded app, defaults to true
      * @param bool                 $isPrivateApp                    Whether the app is a private app, defaults to false
      * @param string|null          $privateAppStorefrontAccessToken The Storefront API Access Token for a private app
@@ -69,7 +68,7 @@ class Context
      *                                                              it
      * @param string[]             $customShopDomains               One or more regexps to use when validating domains
      *
-     * @throws MissingArgumentException
+     * @throws \Shopify\Exception\MissingArgumentException
      */
     public static function initialize(
         string $apiKey,
@@ -77,12 +76,12 @@ class Context
         $scopes,
         string $hostName,
         SessionStorage $sessionStorage,
-        string $apiVersion,
+        string $apiVersion = ApiVersion::LATEST,
         bool $isEmbeddedApp = true,
         bool $isPrivateApp = false,
-        ?string $privateAppStorefrontAccessToken = null,
+        string $privateAppStorefrontAccessToken = null,
         string $userAgentPrefix = '',
-        ?LoggerInterface $logger = null,
+        LoggerInterface $logger = null,
         array $customShopDomains = []
     ): void {
         $authScopes = new Scopes($scopes);
@@ -93,7 +92,6 @@ class Context
             'apiSecretKey' => $apiSecretKey,
             'scopes' => implode((array)$scopes),
             'hostName' => $hostName,
-            'apiVersion' => $apiVersion,
         ];
         $missing = array();
         foreach ($requiredValues as $key => $value) {
@@ -107,6 +105,10 @@ class Context
             throw new MissingArgumentException(
                 "Cannot initialize Shopify API Library. Missing values for: $missing"
             );
+        }
+
+        if (!ApiVersion::isValid($apiVersion)) {
+            throw new InvalidArgumentException("Invalid API version: $apiVersion");
         }
 
         if (!preg_match("/http(s)?:\/\//", $hostName)) {
@@ -140,7 +142,7 @@ class Context
     /**
      * Throws exception if initialize() has not been called
      *
-     * @throws UninitializedContextException
+     * @throws \Shopify\Exception\UninitializedContextException
      */
     public static function throwIfUninitialized(): void
     {
@@ -157,7 +159,7 @@ class Context
      *
      * @param string $message Message to output with the exception
      *
-     * @throws PrivateAppException
+     * @throws \Shopify\Exception\PrivateAppException
      */
     public static function throwIfPrivateApp(string $message): void
     {
@@ -173,7 +175,7 @@ class Context
      * @param string $level   One of the \Psr\Log\LogLevel::* consts, defaults to INFO
      * @param array $context  Key/value pairs of contextual information supporting the log statement
      *
-     * @throws UninitializedContextException
+     * @throws \Shopify\Exception\UninitializedContextException
      */
     public static function log(string $message, string $level = LogLevel::INFO, array $context = []): void
     {
@@ -299,12 +301,12 @@ class Context
      *
      * @throws UninitializedContextException
      * @throws FeatureDeprecatedException
-     * @throws Exception
+     * @throws \Exception
      */
     public static function logDeprecation(string $deprecatedFrom, string $message, array $context = []): void
     {
         if (!preg_match('#^\d+.\d+.\d+$#', $deprecatedFrom)) {
-            throw new Exception(sprintf('Encountered an invalid version: "%s"', $deprecatedFrom));
+            throw new \Exception(sprintf('Encountered an invalid version: "%s"', $deprecatedFrom));
         }
 
         $currentVersion = Utils::getVersion();

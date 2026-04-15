@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Shopify\Auth;
 
-use Exception;
 use DateTime;
 use Shopify\Context;
 use Shopify\Utils;
@@ -24,10 +23,10 @@ class Session
     private $onlineAccessInfo = null;
 
     public function __construct(
-        private $id,
-        private $shop,
-        private $isOnline,
-        private $state
+        $id,
+        $shop,
+        $isOnline,
+        $state
     ) {
         $this->id = $id;
         $this->shop = Utils::sanitizeShopDomain($shop);
@@ -95,7 +94,7 @@ class Session
     /**
      * @param string|int|DateTime $expires
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function setExpires($expires): void
     {

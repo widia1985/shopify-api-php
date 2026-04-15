@@ -8,9 +8,12 @@ class PageInfo
 {
     private const LINK_HEADER_REGEXP = '/<([^<]+)>; rel="([^"]+)"/';
 
-    private readonly ?array $fields;
-    private readonly ?string $previousPageUrl;
-    private readonly ?string $nextPageUrl;
+    /** @var array|null */
+    private $fields;
+    /** @var string|null */
+    private $previousPageUrl;
+    /** @var string|null */
+    private $nextPageUrl;
 
     /**
      * PageInfo constructor.
@@ -60,13 +63,13 @@ class PageInfo
         $fields = [];
         foreach ($linkHeaderSegments as $segment) {
             $parsedUrl = [];
-            preg_match(self::LINK_HEADER_REGEXP, (string) $segment, $parsedUrl);
+            preg_match(self::LINK_HEADER_REGEXP, $segment, $parsedUrl);
             $linkUrl = $parsedUrl[1];
             $queryParams = self::getQueryFromUrl($linkUrl);
 
             if (array_key_exists('fields', $queryParams)) {
                 $linkFields = $queryParams['fields'];
-                $fields = explode(',', (string) $linkFields);
+                $fields = explode(',', $linkFields);
             }
         }
         return $fields;
@@ -83,7 +86,7 @@ class PageInfo
         $nextUrl = null;
         foreach ($linkHeaderSegments as $url) {
             $parsedLink = [];
-            preg_match(self::LINK_HEADER_REGEXP, (string) $url, $parsedLink);
+            preg_match(self::LINK_HEADER_REGEXP, $url, $parsedLink);
             $linkRel = $parsedLink[2];
             $linkUrl = $parsedLink[1];
 

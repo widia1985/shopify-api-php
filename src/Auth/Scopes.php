@@ -8,8 +8,10 @@ final class Scopes
 {
     public const SCOPE_DELIMITER = ',';
 
-    private readonly array $compressedScopes;
-    private readonly array $expandedScopes;
+    /** @var array */
+    private $compressedScopes;
+    /** @var array */
+    private $expandedScopes;
 
     /**
      * @param string|array $scopes
@@ -96,7 +98,7 @@ final class Scopes
     {
         $impliedScopes = [];
         foreach ($scopes as $scope) {
-            if (preg_match('/^(unauthenticated_)?write_(.*)$/', (string) $scope, $matches)) {
+            if (preg_match('/^(unauthenticated_)?write_(.*)$/', $scope, $matches)) {
                 $impliedScopes[] = ($matches[1] ?? '') . "read_{$matches[2]}";
             }
         }
